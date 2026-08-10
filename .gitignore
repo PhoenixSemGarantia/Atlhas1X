@@ -1,0 +1,15 @@
+# Arquivos de ambiente e segredos
+.env
+.env.*
+!.env.example
+
+# Dependências e builds comuns
+node_modules/
+dist/
+build/
+coverage/
+
+# Arquivos do sistema e editor
+.DS_Store
+.idea/
+.vscode/
