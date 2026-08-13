@@ -2,11 +2,15 @@
 
 Atlhas1x é uma ferramenta simples, somente de leitura, para auditoria de segurança do Windows.
 
-## Versão 0.2
+Current version: v0.3
 
-Esta versão verifica Windows Defender, Windows Firewall, UAC, Remote Desktop (RDP), membros do grupo local Administradores e informações básicas do sistema: Windows, hostname e usuário atual. Ela gera relatórios HTML offline em `reports/`, dentro da pasta do Atlhas1x.
+Esta versão adiciona checks de BitLocker, Secure Boot, Windows Update, Automatic Updates e Security Score aos relatórios HTML offline.
+
+The Atlhas1x Security Score is an internal project metric designed to provide a simple overview of detected security findings. It is not an official Microsoft, NIST, CIS or industry-standard score.
 
 O programa não altera Firewall, Defender, UAC, RDP, usuários, políticas nem qualquer outra configuração do Windows.
+
+O Atlhas1x não exige pacotes Python adicionais. Se uma consulta ou recurso não estiver disponível em determinada versão do Windows, o check correspondente é registrado como `UNKNOWN` ou `NOT AVAILABLE`, sem interromper a auditoria inteira.
 
 ## Instalar e executar no Windows
 
