@@ -21,7 +21,8 @@ set "SOURCE=%SOURCE:~0,-1%"
 
 REM Pergunta ao Windows qual e a Area de Trabalho real deste usuario.
 REM Isso funciona mesmo quando a Area de Trabalho foi movida para o OneDrive.
-for /f "usebackq delims=" %%D in (`powershell -NoProfile -Command "[Environment]::GetFolderPath('Desktop')"`) do set "DESKTOP_DIR=%%D"
+set "DESKTOP_DIR=%USERPROFILE%\Desktop"
+for /f "usebackq delims=" %%D in (`powershell -NoProfile -Command "[Environment]::GetFolderPath('Desktop')" 2^>nul`) do set "DESKTOP_DIR=%%D"
 
 REM A auditoria sera executada em uma pasta local e gravavel.
 set "DESTINATION=%DESKTOP_DIR%\Atlhas1x"
@@ -66,8 +67,11 @@ echo.
 
 REM Baixa o pacote portatil oficial e nao instala programas no Windows.
 set "RUNTIME_DIR=%DESTINATION%\runtime\python"
-set "PYTHON_ZIP=%TEMP%\atlhas1x-python-3.13.15-embed-amd64.zip"
-set "PYTHON_URL=https://www.python.org/ftp/python/3.13.15/python-3.13.15-embed-amd64.zip"
+set "PYTHON_VERSION=3.13.15"
+REM Windows 7 uses the last compatible portable Python release.
+ver | find "6.1" >nul && set "PYTHON_VERSION=3.8.10"
+set "PYTHON_ZIP=%TEMP%\atlhas1x-python-%PYTHON_VERSION%-embed-amd64.zip"
+set "PYTHON_URL=https://www.python.org/ftp/python/%PYTHON_VERSION%/python-%PYTHON_VERSION%-embed-amd64.zip"
 echo       Baixando Python portatil oficial. Isso pode levar alguns minutos...
 
 REM Baixa o arquivo e interrompe com uma mensagem clara se a internet falhar.
