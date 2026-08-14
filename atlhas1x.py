@@ -12,7 +12,7 @@ import time
 from pathlib import Path
 
 APP_NAME = "Atlhas1x"
-VERSION = "v0.3"
+VERSION = "v0.4"
 SEVERITIES = ("INFO", "LOW", "MEDIUM", "HIGH", "CRITICAL")
 SCORE_IMPACTS = {"INFO": 0, "LOW": 2, "MEDIUM": 5, "HIGH": 10, "CRITICAL": 20}
 
@@ -23,6 +23,14 @@ def powershell(command):
         result = subprocess.run(["powershell", "-NoProfile", "-NonInteractive", "-Command", command], capture_output=True, text=True, timeout=20)
         if result.returncode: return None, result.stderr.strip() or f"PowerShell exited with {result.returncode}"
         return result.stdout.strip(), None
+    except (OSError, subprocess.TimeoutExpired) as exc: return None, str(exc)
+
+def command(command_line):
+    """Run a built-in Windows command as a read-only fallback."""
+    if os.name != "nt": return None, "This check requires Windows"
+    try:
+        result = subprocess.run(["cmd", "/c", command_line], capture_output=True, text=True, timeout=20)
+        return (result.stdout.strip(), None) if result.returncode == 0 else (None, result.stderr.strip() or f"Command exited with {result.returncode}")
     except (OSError, subprocess.TimeoutExpired) as exc: return None, str(exc)
 
 
@@ -74,7 +82,12 @@ def administrators():
 
 def bitlocker():
     raw, error = powershell("Get-BitLockerVolume -MountPoint $env:SystemDrive | Select -Expand ProtectionStatus")
-    if not raw: return finding("ATL-0007", "BitLocker", "Disk Encryption", "UNKNOWN", "UNKNOWN", "LOW", "BitLocker status could not be collected.", "Review system drive encryption manually.", "No data returned", error)
+    if not raw:
+        fallback, fallback_error = command("manage-bde -status %SystemDrive%")
+        if fallback:
+            enabled = "Protection Status:" in fallback and "On" in fallback
+            return finding("ATL-0007", "BitLocker", "Disk Encryption", "Enabled" if enabled else "Disabled", "PASS" if enabled else "WARNING", "INFO" if enabled else "MEDIUM", "System drive BitLocker protection was read through manage-bde.", "No action required." if enabled else "Review whether disk encryption should be enabled.", fallback[:1200])
+        return finding("ATL-0007", "BitLocker", "Disk Encryption", "UNKNOWN", "UNKNOWN", "LOW", "BitLocker status could not be collected.", "Review system drive encryption manually.", "No data returned", fallback_error or error)
     enabled = raw in ("1", "On"); return finding("ATL-0007", "BitLocker", "Disk Encryption", "Enabled" if enabled else "Disabled", "PASS" if enabled else "WARNING", "INFO" if enabled else "MEDIUM", "System drive BitLocker protection is enabled." if enabled else "BitLocker protection is not enabled on the system drive.", "Review whether disk encryption should be enabled.", f"ProtectionStatus={raw}")
 
 def secure_boot():
@@ -94,6 +107,45 @@ def automatic_updates():
     raw,error=powershell("(Get-ItemProperty 'HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\WindowsUpdate\\AU' -Name NoAutoUpdate -ErrorAction SilentlyContinue).NoAutoUpdate")
     if not raw: return finding("ATL-0010", "Automatic Updates", "Updates", "UNKNOWN", "UNKNOWN", "LOW", "Automatic Updates policy could not be determined.", "Review Automatic Updates settings manually.", "No policy value returned", error)
     enabled=raw != "1"; return finding("ATL-0010", "Automatic Updates", "Updates", "Enabled" if enabled else "Disabled", "PASS" if enabled else "WARNING", "INFO" if enabled else "MEDIUM", "Automatic Updates appear to be enabled." if enabled else "Automatic Updates appear to be disabled.", "Review Automatic Updates configuration.", f"NoAutoUpdate={raw or 'Not configured'}")
+
+def smbv1():
+    raw,error=powershell("Get-SmbServerConfiguration | Select -Expand EnableSMB1Protocol")
+    if not raw: return finding("ATL-0011","SMBv1","Network Security","UNKNOWN","UNKNOWN","LOW","SMB configuration could not be determined.","Review SMB configuration manually.","No data returned",error)
+    enabled=raw.lower()=="true"; return finding("ATL-0011","SMBv1","Network Security","Enabled" if enabled else "Disabled","WARNING" if enabled else "PASS","HIGH" if enabled else "INFO","SMBv1 is enabled on this system." if enabled else "SMBv1 is disabled on this system.","Review whether the legacy SMB protocol is required." if enabled else "No action required.",f"EnableSMB1Protocol={raw}")
+
+def password_policy():
+    raw,error=powershell("net accounts")
+    if not raw: return finding("ATL-0012","Local Password Policy","Authentication","UNKNOWN","UNKNOWN","LOW","Local password policy could not be collected.","Review the local password policy manually.","No data returned",error)
+    import re
+    match=re.search(r"Minimum password length.*?:\s*(\d+)",raw,re.I); length=int(match.group(1)) if match else None
+    severity="MEDIUM" if length is not None and length < 8 else "INFO" if length is not None else "LOW"
+    status=f"{length} characters" if length is not None else "Available for review"
+    return finding("ATL-0012","Local Password Policy","Authentication",status,"WARNING" if severity=="MEDIUM" else "INFO",severity,"The configured minimum password length is relatively low." if severity=="MEDIUM" else "Local password policy data was collected.","Review the local password policy." if severity=="MEDIUM" else "No action required.",raw[:1200])
+
+def guest_account():
+    raw,error=powershell("Get-LocalUser | Where-Object {$_.SID.Value -match '-501$'} | Select Name,Enabled | ConvertTo-Json -Compress")
+    if not raw: return finding("ATL-0013","Guest Account","Account Security","UNKNOWN","UNKNOWN","LOW","Guest account status could not be determined.","Review the Guest account manually.","No data returned",error)
+    try:
+        data=json.loads(raw); enabled=data.get("Enabled"); return finding("ATL-0013","Guest Account","Account Security","Enabled" if enabled else "Disabled","WARNING" if enabled else "PASS","MEDIUM" if enabled else "INFO","The Guest account is enabled." if enabled else "The Guest account is disabled.","Review whether the Guest account is required." if enabled else "No action required.",f"Name={data.get('Name')}; Enabled={enabled}")
+    except ValueError as exc: return finding("ATL-0013","Guest Account","Account Security","UNKNOWN","UNKNOWN","LOW","Guest account status could not be parsed.","Review the Guest account manually.","Invalid response",str(exc))
+
+def passwordless_accounts():
+    raw,error=powershell("Get-LocalUser | Where-Object {$_.PasswordRequired -eq $false} | Select -Expand Name")
+    if raw is None: return finding("ATL-0014","Local Account Password Check","Account Security","UNKNOWN","UNKNOWN","LOW","Local account password configuration could not be determined.","Review local account settings manually.","No data returned",error)
+    accounts=[x for x in raw.splitlines() if x]; count=len(accounts); return finding("ATL-0014","Local Account Password Check","Account Security",f"{count} account(s) require review","WARNING" if count else "PASS","HIGH" if count else "INFO","Accounts configured without a required password were found." if count else "No local accounts with PasswordRequired=False were returned.","Review listed accounts and their password configuration." if count else "No action required.","; ".join(accounts) or "PasswordRequired=False accounts: none")
+
+def security_service(fid,name,service):
+    raw,error=powershell(f"Get-Service -Name '{service}' | Select Status,StartType | ConvertTo-Json -Compress")
+    if not raw:
+        fallback, fallback_error = command(f"sc query {service}")
+        if fallback:
+            running = "RUNNING" in fallback.upper()
+            state = "Running" if running else "Not Running"
+            return finding(fid,name,"System Services",state,"PASS" if running else "WARNING","INFO" if running else "LOW",f"{name} service is running." if running else f"{name} service is not running.","No action required." if running else "Review whether this service is expected to run.",fallback[:500])
+        return finding(fid,name,"System Services","UNKNOWN","UNKNOWN","LOW",f"{name} service could not be determined.","Review the service manually.","No data returned",fallback_error or error)
+    try:
+        data=json.loads(raw); running=data.get("Status")=="Running"; return finding(fid,name,"System Services","Running" if running else str(data.get("Status")),"PASS" if running else "WARNING","INFO" if running else "LOW",f"{name} service is running." if running else f"{name} service is not running.","No action required." if running else "Review whether this service is expected to run.",f"Status={data.get('Status')}; StartType={data.get('StartType')}")
+    except ValueError as exc: return finding(fid,name,"System Services","UNKNOWN","UNKNOWN","LOW",f"{name} service could not be parsed.","Review the service manually.","Invalid response",str(exc))
 
 
 def system_info():
@@ -128,7 +180,7 @@ def report_html(level, findings, info, started, ended):
 
 def main():
     parser = argparse.ArgumentParser(); parser.add_argument("--report", choices=("basic","intermediate","advanced")); parser.add_argument("--mode", choices=("basic","intermediate","advanced"))
-    args = parser.parse_args(); level = args.report or args.mode or "basic"; started = dt.datetime.now(); findings = [defender(), firewall(), uac(), rdp(), administrators(), bitlocker(), secure_boot(), windows_update(), automatic_updates()]; ended = dt.datetime.now()
+    args = parser.parse_args(); level = args.report or args.mode or "basic"; started = dt.datetime.now(); findings = [defender(), firewall(), uac(), rdp(), administrators(), bitlocker(), secure_boot(), windows_update(), automatic_updates(), smbv1(), password_policy(), guest_account(), passwordless_accounts(), security_service("ATL-0015","Windows Defender Service","WinDefend"), security_service("ATL-0016","Windows Firewall Service","MpsSvc"), security_service("ATL-0017","Windows Update Service","wuauserv"), security_service("ATL-0018","Security Center Service","wscsvc")]; ended = dt.datetime.now()
     path = None
     try:
         reports = Path("reports"); reports.mkdir(exist_ok=True); stamp = started.strftime("%Y-%m-%d_%H%M%S"); path = reports / f"atlhas1x_{level}_{stamp}.html"; path.write_text(report_html(level, findings, system_info(), started, ended), encoding="utf-8")
