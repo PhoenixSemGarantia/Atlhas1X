@@ -2,9 +2,9 @@
 
 Atlhas1x é uma ferramenta simples, somente de leitura, para auditoria de segurança do Windows.
 
-Current version: v0.3
+Current version: v0.4
 
-Esta versão adiciona checks de BitLocker, Secure Boot, Windows Update, Automatic Updates e Security Score aos relatórios HTML offline.
+Esta versão adiciona SMB security checks, local password policy auditing, Guest account detection, local account password configuration review e Windows security service checks aos relatórios HTML offline.
 
 The Atlhas1x Security Score is an internal project metric designed to provide a simple overview of detected security findings. It is not an official Microsoft, NIST, CIS or industry-standard score.
 

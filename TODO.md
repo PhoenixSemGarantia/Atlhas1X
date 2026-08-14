@@ -1,18 +1,18 @@
 # TODO
 
-## v0.3
+## v0.4
 
-- [x] Add BitLocker check
-- [x] Add Secure Boot check
-- [x] Add Windows Update check
-- [x] Check automatic updates
-- [x] Add security score
-- [x] Add score to HTML reports
+- [x] Check SMBv1
+- [x] Read local password policy
+- [x] Check Guest account
+- [x] Review local account password configuration
+- [x] Check security-related Windows services
+- [x] Add findings to HTML reports
 
 ## Next
 
-- [ ] Audit Windows services
-- [ ] Check SMB configuration
-- [ ] Review local password policy
-- [ ] Add report history comparison
-- [ ] Improve technical evidence
+- [ ] Check Windows shares
+- [ ] Audit startup programs
+- [ ] Audit scheduled tasks
+- [ ] Add scan comparison
+- [ ] Add report metadata
