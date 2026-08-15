@@ -12,7 +12,7 @@ import time
 from pathlib import Path
 
 APP_NAME = "Atlhas1x"
-VERSION = "v0.4"
+VERSION = "v0.5"
 SEVERITIES = ("INFO", "LOW", "MEDIUM", "HIGH", "CRITICAL")
 SCORE_IMPACTS = {"INFO": 0, "LOW": 2, "MEDIUM": 5, "HIGH": 10, "CRITICAL": 20}
 
@@ -147,6 +147,42 @@ def security_service(fid,name,service):
         data=json.loads(raw); running=data.get("Status")=="Running"; return finding(fid,name,"System Services","Running" if running else str(data.get("Status")),"PASS" if running else "WARNING","INFO" if running else "LOW",f"{name} service is running." if running else f"{name} service is not running.","No action required." if running else "Review whether this service is expected to run.",f"Status={data.get('Status')}; StartType={data.get('StartType')}")
     except ValueError as exc: return finding(fid,name,"System Services","UNKNOWN","UNKNOWN","LOW",f"{name} service could not be parsed.","Review the service manually.","Invalid response",str(exc))
 
+def unusual_path(value):
+    text=(value or "").lower().replace("/","\\")
+    return any(part in text for part in ("\\temp\\", "\\appdata\\local\\temp\\", "\\downloads\\", "\\desktop\\"))
+
+def startup_programs():
+    raw,error=powershell("Get-CimInstance Win32_StartupCommand | Select Name,Command,Location,User | ConvertTo-Json -Compress")
+    if not raw: return finding("ATL-0019","Startup Programs","Startup","UNKNOWN","UNKNOWN","LOW","Startup programs could not be collected.","Review startup items manually.","No data returned",error)
+    try:
+        items=json.loads(raw); items=items if isinstance(items,list) else [items]; risky=[x for x in items if unusual_path(x.get('Command'))]
+        sev="MEDIUM" if risky else "INFO"; return finding("ATL-0019","Startup Programs","Startup",f"{len(items)} detected; {len(risky)} require review","WARNING" if risky else "INFO",sev,"Startup items were collected. Items from temporary or user download locations require review." if risky else "Startup items were collected without unusual path indicators.","Review listed startup items." if risky else "No action required.",json.dumps(risky[:10]) if risky else f"Total={len(items)}")
+    except ValueError as exc: return finding("ATL-0019","Startup Programs","Startup","UNKNOWN","UNKNOWN","LOW","Startup programs could not be parsed.","Review startup items manually.","Invalid response",str(exc))
+
+def scheduled_tasks():
+    raw,error=powershell("Get-ScheduledTask | Select TaskName,TaskPath,State,@{N='Action';E={$_.Actions.Execute}},@{N='RunAs';E={$_.Principal.UserId}} | ConvertTo-Json -Compress")
+    if not raw: return finding("ATL-0020","Scheduled Tasks","Scheduled Tasks","UNKNOWN","UNKNOWN","LOW","Scheduled tasks could not be collected.","Review scheduled tasks manually.","No data returned",error)
+    try:
+        items=json.loads(raw); items=items if isinstance(items,list) else [items]; risky=[x for x in items if unusual_path(x.get('Action'))]
+        return finding("ATL-0020","Scheduled Tasks","Scheduled Tasks",f"{len(items)} detected; {len(risky)} require review","WARNING" if risky else "INFO","MEDIUM" if risky else "INFO","Tasks executing from potentially risky locations require review." if risky else "Scheduled tasks were collected without unusual path indicators.","Review listed scheduled tasks." if risky else "No action required.",json.dumps(risky[:10]) if risky else f"Total={len(items)}")
+    except ValueError as exc: return finding("ATL-0020","Scheduled Tasks","Scheduled Tasks","UNKNOWN","UNKNOWN","LOW","Scheduled tasks could not be parsed.","Review scheduled tasks manually.","Invalid response",str(exc))
+
+def network_shares():
+    raw,error=powershell("Get-SmbShare | Select Name,Path,Special | ConvertTo-Json -Compress")
+    if not raw: return finding("ATL-0021","Network Shares","Network Sharing","UNKNOWN","UNKNOWN","LOW","Network shares could not be collected.","Review network shares manually.","No data returned",error)
+    try:
+        items=json.loads(raw); items=items if isinstance(items,list) else [items]; user=[x for x in items if not x.get('Special')]
+        return finding("ATL-0021","Network Shares","Network Sharing",f"{len(items)} detected; {len(user)} user-created","INFO","INFO","Local SMB shares were collected. Administrative shares are not treated as vulnerabilities.","Review user-created shares and their access requirements.",json.dumps(items[:30]))
+    except ValueError as exc: return finding("ATL-0021","Network Shares","Network Sharing","UNKNOWN","UNKNOWN","LOW","Network shares could not be parsed.","Review network shares manually.","Invalid response",str(exc))
+
+def automatic_services():
+    raw,error=powershell("Get-CimInstance Win32_Service | Where-Object {$_.StartMode -eq 'Auto'} | Select Name,State,PathName | ConvertTo-Json -Compress")
+    if not raw: return finding("ATL-0022","Automatic Services","System Services","UNKNOWN","UNKNOWN","LOW","Automatic services could not be collected.","Review automatic services manually.","No data returned",error)
+    try:
+        items=json.loads(raw); items=items if isinstance(items,list) else [items]; risky=[x for x in items if x.get('State')!='Running' or unusual_path(x.get('PathName'))]
+        return finding("ATL-0022","Automatic Services","System Services",f"{len(items)} detected; {len(risky)} require review","WARNING" if risky else "INFO","LOW" if risky else "INFO","Automatic services that are stopped or use unusual paths require review." if risky else "Automatic services were collected without basic review indicators.","Review listed automatic services." if risky else "No action required.",json.dumps(risky[:10]) if risky else f"Total={len(items)}")
+    except ValueError as exc: return finding("ATL-0022","Automatic Services","System Services","UNKNOWN","UNKNOWN","LOW","Automatic services could not be parsed.","Review automatic services manually.","Invalid response",str(exc))
+
 
 def system_info():
     return {"hostname": socket.gethostname(), "operating_system": platform.platform(), "os_build": platform.version(), "architecture": platform.machine(), "user": getpass.getuser(), "administrator_privileges": "Not evaluated", "python": platform.python_version()}
@@ -180,7 +216,7 @@ def report_html(level, findings, info, started, ended):
 
 def main():
     parser = argparse.ArgumentParser(); parser.add_argument("--report", choices=("basic","intermediate","advanced")); parser.add_argument("--mode", choices=("basic","intermediate","advanced"))
-    args = parser.parse_args(); level = args.report or args.mode or "basic"; started = dt.datetime.now(); findings = [defender(), firewall(), uac(), rdp(), administrators(), bitlocker(), secure_boot(), windows_update(), automatic_updates(), smbv1(), password_policy(), guest_account(), passwordless_accounts(), security_service("ATL-0015","Windows Defender Service","WinDefend"), security_service("ATL-0016","Windows Firewall Service","MpsSvc"), security_service("ATL-0017","Windows Update Service","wuauserv"), security_service("ATL-0018","Security Center Service","wscsvc")]; ended = dt.datetime.now()
+    args = parser.parse_args(); level = args.report or args.mode or "basic"; started = dt.datetime.now(); findings = [defender(), firewall(), uac(), rdp(), administrators(), bitlocker(), secure_boot(), windows_update(), automatic_updates(), smbv1(), password_policy(), guest_account(), passwordless_accounts(), security_service("ATL-0015","Windows Defender Service","WinDefend"), security_service("ATL-0016","Windows Firewall Service","MpsSvc"), security_service("ATL-0017","Windows Update Service","wuauserv"), security_service("ATL-0018","Security Center Service","wscsvc"), startup_programs(), scheduled_tasks(), network_shares(), automatic_services()]; ended = dt.datetime.now()
     path = None
     try:
         reports = Path("reports"); reports.mkdir(exist_ok=True); stamp = started.strftime("%Y-%m-%d_%H%M%S"); path = reports / f"atlhas1x_{level}_{stamp}.html"; path.write_text(report_html(level, findings, system_info(), started, ended), encoding="utf-8")
