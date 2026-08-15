@@ -1,18 +1,18 @@
 # TODO
 
-## v0.4
+## v0.5
 
-- [x] Check SMBv1
-- [x] Read local password policy
-- [x] Check Guest account
-- [x] Review local account password configuration
-- [x] Check security-related Windows services
-- [x] Add findings to HTML reports
+- [x] Audit startup programs
+- [x] Audit scheduled tasks
+- [x] List network shares
+- [x] Audit automatic services
+- [x] Add basic persistence indicators
+- [x] Add new sections to HTML reports
 
 ## Next
 
-- [ ] Check Windows shares
-- [ ] Audit startup programs
-- [ ] Audit scheduled tasks
-- [ ] Add scan comparison
-- [ ] Add report metadata
+- [ ] Add process inventory
+- [ ] Add listening port inventory
+- [ ] Add network connection overview
+- [ ] Add scan history
+- [ ] Compare two scans
