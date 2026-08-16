@@ -1,18 +1,23 @@
 # TODO
 
-## v0.5
+## v1.2
 
-- [x] Audit startup programs
-- [x] Audit scheduled tasks
-- [x] List network shares
-- [x] Audit automatic services
-- [x] Add basic persistence indicators
-- [x] Add new sections to HTML reports
+- [x] Review heuristic weights
+- [x] Reduce false positives
+- [x] Add trusted context indicators
+- [x] Improve YARA confidence handling
+- [x] Improve Windows process validation
+- [x] Improve backdoor indicator logic
+- [x] Improve finding deduplication
+- [x] Add heuristic regression tests
+- [x] Add YARA validation tests
+- [x] Add report tests
+- [ ] Add full environment validation
+- [x] Add TESTING.md
 
-## Next
+## Future
 
-- [ ] Add process inventory
-- [ ] Add listening port inventory
-- [ ] Add network connection overview
-- [ ] Add scan history
-- [ ] Compare two scans
+- [ ] Continue expanding regression tests
+- [ ] Add optional custom scan paths
+- [ ] Improve rule metadata classification
+- [ ] Improve compatibility across Windows editions
