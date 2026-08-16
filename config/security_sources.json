@@ -1,0 +1,20 @@
+{
+  "clamav": {
+    "enabled": false,
+    "clamscan_command": "clamscan.exe",
+    "freshclam_command": "freshclam.exe",
+    "database_directory": "signatures/clamav"
+  },
+  "yara": {
+    "enabled": true,
+    "rule_directories": [
+      "rules/local",
+      "rules/third_party/yara-rules",
+      "signatures/yara"
+    ]
+  },
+  "hashes": {
+    "enabled": true,
+    "database_file": "signatures/hashes/local_hashes.sqlite3"
+  }
+}
