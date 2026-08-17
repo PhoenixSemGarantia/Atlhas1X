@@ -1,1 +1,6 @@
-# Atlhas1x v0.1 usa apenas a biblioteca padrão do Python.
+# Optional local YARA engine for focused, offline file matching.
+yara-python>=4.5.4
+
+# ClamAV and freshclam are Windows executables supplied by a local ClamAV
+# installation; they are intentionally not downloaded or executed by pip.
+# SQLite support is provided by Python's standard-library sqlite3 module.
