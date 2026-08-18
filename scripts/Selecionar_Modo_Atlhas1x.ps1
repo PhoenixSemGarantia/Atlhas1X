@@ -17,7 +17,7 @@ $title.Location = New-Object System.Drawing.Point(25, 20)
 $form.Controls.Add($title)
 
 $description = New-Object System.Windows.Forms.Label
-$description.Text = "Basico: resumo facil de entender.`r`nIntermediario: resumo com valores coletados.`r`nAvancado: detalhes tecnicos, criterios e dados da auditoria."
+$description.Text = "Basico: resumo facil de entender.`r`nIntermediario: contexto, recomendacoes e resumo.`r`nAvancado: detalhes tecnicos e inventarios completos."
 $description.Font = New-Object System.Drawing.Font('Segoe UI', 10)
 $description.AutoSize = $true
 $description.Location = New-Object System.Drawing.Point(28, 55)
