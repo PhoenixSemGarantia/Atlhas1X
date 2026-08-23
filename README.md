@@ -1,3 +1,5 @@
+![Atlhas1x Banner](assets/banner.png)
+
 # Atlhas1x
 Windows Security Scanner
 
@@ -80,7 +82,10 @@ python -m unittest discover -s tests -v
 See `TESTING.md` for detailed instructions on validating the tool safely.
 
 ## License
-MIT License.
+This project is licensed under the [MIT License](LICENSE).
+
+## Acknowledgements
+This project utilizes the [YARA](https://github.com/VirusTotal/yara) pattern matching swiss knife, created and maintained by Victor M. Alvarez and the VirusTotal team. YARA is licensed under the BSD 3-Clause License. We express our gratitude for their incredible work in the cybersecurity community.
 
 ## Disclaimer
-Atlhas1x is an auditing tool and does not automatically modify or remediate Windows security settings. Findings should be reviewed in the context of the system where the scan was performed.
+Atlhas1x is designed as an auditing and baseline analysis tool. It **does not** replace a dedicated EDR/Antivirus solution. Always verify findings manually before making critical system changes.
