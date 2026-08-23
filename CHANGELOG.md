@@ -2,24 +2,22 @@
 
 ## v1.2
 
-### Improved
+### Added
+- Optional automatic update system
+- Persistent update preference
+- Manual updater for users who disable automatic updates
+- Single Windows launcher
+- Repository version checking
 
-- Centralized heuristic indicator weights and trusted-context reductions.
-- Context-aware YARA confidence handling and listener correlation.
-- Windows process path validation, command parsing and file deduplication.
-- Advanced-report explanation of score reasoning and false-positive context.
+### Improved
+- README documentation
+- Distribution workflow
+- Detection accuracy
+- False-positive handling
+- Test coverage
 
 ### Fixed
-
-- False positives from normal Windows scheduled tasks and environment-variable paths.
-- Access-restricted process values being interpreted as executable paths.
-- Duplicate threat findings for the same correlated file.
-- Loopback or listener-only context escalating suspicious activity by itself.
-
-### Added
-
-- False-positive regression, heuristic, YARA and offline-report validation tests.
-- `TESTING.md` with safe local and Windows VM validation guidance.
+- Remaining scanner and report issues discovered during validation
 
 ## v1.1
 
