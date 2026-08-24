@@ -15,6 +15,14 @@ if errorlevel 1 (
 set "APP_DIR=%~dp0"
 set "APP_DIR=%APP_DIR:~0,-1%"
 
+REM Verify Integrity
+if exist "%APP_DIR%\repair.py" (
+    python "%APP_DIR%\repair.py" --check-integrity
+    if errorlevel 1 (
+        exit /b 1
+    )
+)
+
 REM Run Updater
 python "%APP_DIR%\updater.py"
 
