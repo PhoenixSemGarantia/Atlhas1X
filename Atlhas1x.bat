@@ -4,6 +4,41 @@ setlocal EnableExtensions EnableDelayedExpansion
 set "APP_DIR=%~dp0"
 set "APP_DIR=%APP_DIR:~0,-1%"
 
+REM ======= VERIFICA SE A PASTA É SOMENTE LEITURA =======
+set "TEST_FILE=%APP_DIR%\.writable_test"
+echo test > "%TEST_FILE%" 2>nul
+if errorlevel 1 (
+    echo [AVISO] O Atlhas1x esta sendo executado de uma midia somente leitura ^(ex: CD, Rede ou Pasta Compartilhada^).
+    echo Para funcionar corretamente e baixar dependencias, ele sera copiado para o disco C:.
+    echo.
+    set "NEW_APP_DIR=%USERPROFILE%\Atlhas1x"
+    
+    echo Copiando arquivos para !NEW_APP_DIR!...
+    mkdir "!NEW_APP_DIR!" 2>nul
+    xcopy /E /I /H /Y "%APP_DIR%\*" "!NEW_APP_DIR!\" >nul
+    
+    echo Criando atalho na Area de Trabalho...
+    set "SHORTCUT_PATH=%USERPROFILE%\Desktop\Atlhas1x.lnk"
+    set "VBS_SCRIPT=%TEMP%\criar_atalho.vbs"
+    echo Set oWS = WScript.CreateObject^("WScript.Shell"^) > "!VBS_SCRIPT!"
+    echo sLinkFile = "!SHORTCUT_PATH!" >> "!VBS_SCRIPT!"
+    echo Set oLink = oWS.CreateShortcut^(sLinkFile^) >> "!VBS_SCRIPT!"
+    echo oLink.TargetPath = "!NEW_APP_DIR!\Atlhas1x.bat" >> "!VBS_SCRIPT!"
+    echo oLink.WorkingDirectory = "!NEW_APP_DIR!" >> "!VBS_SCRIPT!"
+    echo oLink.IconLocation = "%SystemRoot%\system32\SHELL32.dll, 24" >> "!VBS_SCRIPT!"
+    echo oLink.Save >> "!VBS_SCRIPT!"
+    cscript //nologo "!VBS_SCRIPT!"
+    del "!VBS_SCRIPT!"
+    
+    echo.
+    echo Copia concluida! Iniciando a partir do disco local...
+    start "" "!NEW_APP_DIR!\Atlhas1x.bat"
+    exit /b 0
+) else (
+    del "%TEST_FILE%" 2>nul
+)
+REM ======================================================
+
 set "PYTHON="
 
 REM Check locally embedded first

@@ -1,7 +1,7 @@
 {
     "version": "1.4.0",
     "files": {
-        "Atlhas1x.bat": "2809a1bef7aa49e55bc6860830b4bd77d58b200dc239d176e53cc8df0b3983bf",
+        "Atlhas1x.bat": "20a1e4e92de044e10b7cad50bf88a9edb592d0301e4f89ea4099e38d42ca7ec9",
         "atlhas1x.py": "dd7270be3877ed7d3ba558788cd881cf827de16e330085916b0097a33874ac36",
         "security_sources.py": "1a0cede12547e37de4c908cdb99862a33c9a71305d928ad2302ce461115e4735",
         "threat_analysis.py": "d7b3dfc3489945f2773c6f7c6c10677f1acff8d37cbf4ec602904349ddf48bfd",
