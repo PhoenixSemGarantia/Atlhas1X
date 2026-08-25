@@ -18,9 +18,9 @@ BACKUP_DIR = "repair_backup"
 def get_version():
     try:
         with open("version.json", "r") as f:
-            return json.load(f).get("version", "1.4.0")
+            return json.load(f).get("version", "1.4.2")
     except:
-        return "1.4.0"
+        return "1.4.2"
 
 def get_file_hash(filepath):
     try:

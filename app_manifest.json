@@ -1,18 +1,18 @@
 {
-    "version": "1.4.0",
+    "version": "1.4.2",
     "files": {
         "Atlhas1x.bat": "fd613c0f3f763b2ee179d9fffa355d7707d05b0d451c2ae5f56fc538c1dae019",
-        "atlhas1x.py": "71fb6837a1f1d737518c41019adb8a07eb1deea9569a96c479821b91bfcc51f3",
+        "atlhas1x.py": "cc1d5fd9a5a096079f25e44f990b192271e397e91cf3d4da220e03ca4fb05162",
         "security_sources.py": "1a0cede12547e37de4c908cdb99862a33c9a71305d928ad2302ce461115e4735",
         "threat_analysis.py": "d7b3dfc3489945f2773c6f7c6c10677f1acff8d37cbf4ec602904349ddf48bfd",
-        "updater.py": "7ec088cfb8848430cc5d0f5f82a1de8479fc2c8ce47d27adb9dcdfe5122a8958",
-        "repair.py": "474eed5b1492fb4274c1215993d20853cd42cf01742ca050b9484eea07b031a8",
+        "updater.py": "ad897af3e7bab92c93292743140e9302f4ca22a23ab9725a3263aad32052db50",
+        "repair.py": "b34ab625d00636d8b9e596d4bcab3b84b30915379d5844a90e715e42dc6372ba",
         "yara_engine.py": "4671bbd93236796cad3fbb30a0d5acaf331c62930f61967a887cc7300367cea5",
         "requirements.txt": "c41dbd1b294f2b17470566c26a979099957bcfe3045614b1fa1a2b50f208343f",
-        "version.json": "e521908e6e34b10e5c5d262c1003eab37866fe0bee31738603458d283592b2ef",
+        "version.json": "113bcca5b20f2bfd2a9f56712f945b989e9c13bb2eb33f4bfb0752cc983a0eba",
         "config/security_sources.json": "f51e32962c3774aeac062d6a665bc49d9a88dabc3d05e2ea0cc114abbeefa31d",
-        "README.md": "e5af1b188cc2745c001c39b1f902ba07c6a4b20cffc18084396bae6b5e048245",
+        "README.md": "d1d4d63246a7c91c4bc5ea087dc901c55a32b7f97c43106e0df8d712b2a2cb80",
         "LICENSE": "e642e797b9ea338caea0db31a74f6b2e3bff4eb7e98bed8ecd6f6adafb349826",
-        "CHANGELOG.md": "f13bc53194ccab83ae86eb7545092f881d083929f3e1c186ee77f12b1932eef5"
+        "CHANGELOG.md": "f4b3d5fe60abcbf7e764648f1520f8c84c9d40888961be5eb47da4a44469d4eb"
     }
 }

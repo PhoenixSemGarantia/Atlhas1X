@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.4.2
+
+### Fixed
+- Automatic updates now download, validate and apply the official package instead of only reporting availability.
+- Startup no longer waits for a hidden terminal response before applying a newer release.
+
+### Improved
+- Updates preserve local reports, the embedded Python runtime and local preferences.
+
 ## v1.4
 
 ### Added

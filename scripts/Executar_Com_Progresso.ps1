@@ -8,7 +8,7 @@ $reportsDir = Join-Path $AppDir 'reports'
 $scriptsDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $selector = Join-Path $scriptsDir 'Selecionar_Modo_Atlhas1x.ps1'
 $auditScript = Join-Path $AppDir 'atlhas1x.py'
-$scannerVersion = 'v1.4'
+$scannerVersion = 'v1.4.2'
 
 if (-not (Test-Path $auditScript) -or -not (Test-Path $selector)) {
     [System.Windows.Forms.MessageBox]::Show('Os arquivos do Atlhas1x nao estao completos.' + [Environment]::NewLine + [Environment]::NewLine + 'Execute instalar_atlhas1x.bat novamente.', 'Atlhas1x - Arquivos ausentes', 'OK', 'Error') | Out-Null

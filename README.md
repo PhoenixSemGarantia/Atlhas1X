@@ -65,9 +65,9 @@ Offline HTML reports are generated locally and work entirely without an internet
 - Optional: `yara-python` for YARA matching.
 
 ## Updating Atlhas1x
-Atlhas1x can check its official GitHub repository for newer releases. Automatic updates are optional and require user consent.
+Atlhas1x checks the official GitHub repository during startup. When a newer version is available, it downloads and applies the update before opening the scanner. The process preserves local reports, the embedded Python runtime and local preferences.
 
-If you choose not to allow automatic updates, a manual `Update_Atlhas1x.bat` will be created for you to trigger updates whenever you prefer.
+To check explicitly from a terminal, run `python updater.py --check`. To confirm an update manually, run `python updater.py --manual`.
 
 ## Self Repair
 Atlhas1x can verify the integrity of its own application files. If essential files are missing or corrupted, it can restore clean copies from the project's official GitHub release.

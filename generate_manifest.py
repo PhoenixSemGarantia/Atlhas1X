@@ -29,10 +29,10 @@ def get_file_hash(filepath):
         return None
 
 def main():
-    version = "1.4.0"
+    version = "1.4.2"
     try:
         with open("version.json", "r") as f:
-            version = json.load(f).get("version", "1.4.0")
+            version = json.load(f).get("version", "1.4.2")
     except:
         pass
         
