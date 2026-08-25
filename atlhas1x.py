@@ -36,7 +36,7 @@ except (ImportError, OSError) as exc:
     THREAT_ENGINE_IMPORT_ERROR = str(exc)
 
 APP_NAME = "Atlhas1x"
-VERSION = "v1.2"
+VERSION = "v1.4"
 SEVERITIES = ("INFO", "LOW", "MEDIUM", "HIGH", "CRITICAL")
 SCORE_IMPACTS = {"INFO": 0, "LOW": 2, "MEDIUM": 5, "HIGH": 10, "CRITICAL": 20}
 LIVE_DETAILS = False
