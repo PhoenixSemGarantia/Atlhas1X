@@ -3,6 +3,7 @@ import sys
 import argparse
 import base64
 import ctypes
+import csv
 import datetime as dt
 import html
 import getpass
