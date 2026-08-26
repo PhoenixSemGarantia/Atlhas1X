@@ -90,7 +90,7 @@ python -m unittest discover -s tests -v
 See `TESTING.md` for detailed instructions on validating the tool safely.
 
 ## License
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [BSD 3-Clause License](LICENSE).
 
 ## Acknowledgements
 This project utilizes the [YARA](https://github.com/VirusTotal/yara) pattern matching swiss knife, created and maintained by Victor M. Alvarez and the VirusTotal team. YARA is licensed under the BSD 3-Clause License. We express our gratitude for their incredible work in the cybersecurity community.
