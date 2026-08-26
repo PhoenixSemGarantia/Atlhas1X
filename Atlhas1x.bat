@@ -133,7 +133,12 @@ if exist "%APP_DIR%\repair.py" (
 REM Run Updater
 call %PYTHON% "%APP_DIR%\updater.py"
 
-REM Run Atlhas1x
-call %PYTHON% "%APP_DIR%\atlhas1x.py" %*
+REM Check Mode
+if "%~1"=="--terminal" (
+    call %PYTHON% "%APP_DIR%\atlhas1x.py"
+    exit /b %ERRORLEVEL%
+)
 
-exit /b %ERRORLEVEL%
+REM Visual Mode Default
+start "" wscript.exe //B "%APP_DIR%\scripts\Abrir_Atlhas1x.vbs"
+exit /b 0
