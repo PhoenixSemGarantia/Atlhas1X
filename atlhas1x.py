@@ -1233,7 +1233,7 @@ class HTMLRenderer(Renderer):
         path = reports / f"atlhas1x_{self.level}_{stamp}.html"
         path.write_text(report_html(self.level, self.findings, self.info, self.started, self.ended, self.inventories, self.health, self.diagnostics, self.threats, self.yara_summary), encoding="utf-8")
         print(f"\nRelatório salvo em:\n{path}")
-        webbrowser.open(path.as_uri())
+        webbrowser.open(path.resolve().as_uri())
         return 0
 
 class TerminalRenderer(Renderer):
