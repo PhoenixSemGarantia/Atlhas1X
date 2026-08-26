@@ -4,6 +4,7 @@ import argparse
 import base64
 import ctypes
 import datetime as dt
+import html
 import json
 import logging
 import os

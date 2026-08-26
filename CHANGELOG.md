@@ -1,5 +1,20 @@
 # Changelog
 
+## v1.4
+
+### Added
+- Atlhas1x application integrity verification
+- GitHub-based self repair
+- Quick Repair
+- Full Repair
+- Verify Only mode
+- Repair rollback
+- Application manifest validation
+
+### Improved
+- Update and recovery reliability
+- Protection of local reports and preferences
+
 ## v1.2
 
 ### Added

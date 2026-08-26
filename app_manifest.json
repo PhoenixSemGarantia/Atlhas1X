@@ -1,0 +1,18 @@
+{
+    "version": "1.4.0",
+    "files": {
+        "Atlhas1x.bat": "191deb00c250493c7d12da78e3af94e2cf1037d9d9aa2bb15ae5a37ebdd77aab",
+        "atlhas1x.py": "df823747f5f48e402153c91a3572672b0eac08ec09460d0b4ba80cd9f18506eb",
+        "security_sources.py": "1a0cede12547e37de4c908cdb99862a33c9a71305d928ad2302ce461115e4735",
+        "threat_analysis.py": "d7b3dfc3489945f2773c6f7c6c10677f1acff8d37cbf4ec602904349ddf48bfd",
+        "updater.py": "7ec088cfb8848430cc5d0f5f82a1de8479fc2c8ce47d27adb9dcdfe5122a8958",
+        "repair.py": "0f40cd1b171d0c3e451a10bec0b9fd455ba82665386cb892846b6d5b4698f803",
+        "yara_engine.py": "4671bbd93236796cad3fbb30a0d5acaf331c62930f61967a887cc7300367cea5",
+        "requirements.txt": "c41dbd1b294f2b17470566c26a979099957bcfe3045614b1fa1a2b50f208343f",
+        "version.json": "e521908e6e34b10e5c5d262c1003eab37866fe0bee31738603458d283592b2ef",
+        "config/security_sources.json": "f51e32962c3774aeac062d6a665bc49d9a88dabc3d05e2ea0cc114abbeefa31d",
+        "README.md": "e5af1b188cc2745c001c39b1f902ba07c6a4b20cffc18084396bae6b5e048245",
+        "LICENSE": "e642e797b9ea338caea0db31a74f6b2e3bff4eb7e98bed8ecd6f6adafb349826",
+        "CHANGELOG.md": "f13bc53194ccab83ae86eb7545092f881d083929f3e1c186ee77f12b1932eef5"
+    }
+}

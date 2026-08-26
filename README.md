@@ -10,6 +10,7 @@ Atlhas1x is a local Windows security scanner designed to audit security configur
 - Defender, Firewall, account, update, network and Windows hardening checks.
 - Basic, Intermediate and Advanced offline HTML reports.
 - **Terminal Mode (v1.3)**: Execute the scanner and view the full report entirely in the command line.
+- **Self Repair (v1.4)**: Automatically verify application integrity and repair missing or corrupted files using the official GitHub repository.
 - Security Score, finding confidence and Scan Completeness metrics.
 - Read-only local collection with isolated check failures.
 - Focused suspicious-activity heuristics for persistence, process paths, recent files and process/listener relationships.
@@ -67,6 +68,10 @@ Offline HTML reports are generated locally and work entirely without an internet
 Atlhas1x can check its official GitHub repository for newer releases. Automatic updates are optional and require user consent.
 
 If you choose not to allow automatic updates, a manual `Update_Atlhas1x.bat` will be created for you to trigger updates whenever you prefer.
+
+## Self Repair
+Atlhas1x can verify the integrity of its own application files. If essential files are missing or corrupted, it can restore clean copies from the project's official GitHub release.
+The repair system never modifies Windows security settings or user scan results.
 
 ## Privacy
 The scan:
