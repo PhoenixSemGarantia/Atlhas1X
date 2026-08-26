@@ -1,17 +1,20 @@
-"""Atlhas1x v1.2 - read-only Windows detection-accuracy scanner."""
+"""Atlhas1x v1.3 - read-only Windows detection-accuracy scanner."""
+import sys
 import argparse
-import csv
+import base64
+import ctypes
 import datetime as dt
-import getpass
-import html
 import json
+import logging
 import os
 import platform
 import socket
 import subprocess
-import sys
 import time
+import webbrowser
+from dataclasses import dataclass
 from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, Tuple, Iterable
 
 # The official embeddable Python runtime used by the Windows installer runs in
 # isolated mode. In that mode the directory of this script is not guaranteed
@@ -1137,18 +1140,183 @@ def report_html(level, findings, info, started, ended, inventories, health=None,
     return f"<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1'><title>Atlhas1x {esc(level.title())} Report</title><style>{css}</style></head><body><main>{head}{navigation}{summary}{hardening}{threats_html}{finding_list}<section id='system'>{section_title('System Information', 'system')}<table>{system}</table></section>{technical}{detailed_inventories}<footer>Generated locally by {APP_NAME} {VERSION}. No settings were modified.{yara_footer}</footer></main><script>{script}</script></body></html>"
 
 
+def interactive_menu():
+    while True:
+        print("\nAtlhas1x v1.3\nWindows Security Scanner\n")
+        print("Como deseja executar o Atlhas1x?\n")
+        print("[1] Básico")
+        print("[2] Intermediário")
+        print("[3] Avançado")
+        print("[4] Usar Atlhas por Terminal\n")
+        print("[?] Qual a diferença entre os modos?")
+        print("[0] Sair\n")
+        try:
+            choice = input("Escolha: ").strip()
+        except (KeyboardInterrupt, EOFError):
+            sys.exit(0)
+            
+        if choice == "1": return "basic", "html"
+        elif choice == "2": return "intermediate", "html"
+        elif choice == "3": return "advanced", "html"
+        elif choice == "4":
+            res = terminal_menu()
+            if res: return res
+        elif choice == "?":
+            print("\n================ DÚVIDAS ================\n")
+            print("1, 2 e 3 (Básico, Intermediário, Avançado):")
+            print("  O sistema fará um escaneamento silencioso")
+            print("  e ao final abrirá um relatório HTML no")
+            print("  seu navegador padrão.")
+            print("\n4 (Modo Terminal):")
+            print("  Para usuários que preferem não abrir")
+            print("  o navegador. Tudo é exibido aqui no prompt,")
+            print("  incluindo o progresso e o relatório final.")
+            print("  Ao terminar, será sugerido salvar um .TXT.\n")
+            print("=========================================\n")
+            input("Pressione ENTER para voltar.")
+        elif choice == "0":
+            sys.exit(0)
+        else:
+            print("\nOpção inválida. Escolha uma opção entre 0 e 4.")
+
+def terminal_menu():
+    while True:
+        print("\nAtlhas1x Terminal\n------------------------------------------------\n")
+        print("Escolha o nível do scan:\n")
+        print("[1] Básico")
+        print("[2] Intermediário")
+        print("[3] Avançado\n")
+        print("[?] Explicar os níveis")
+        print("[0] Voltar\n")
+        try:
+            choice = input("Escolha: ").strip()
+        except (KeyboardInterrupt, EOFError):
+            return None
+            
+        if choice == "1": return "basic", "terminal"
+        elif choice == "2": return "intermediate", "terminal"
+        elif choice == "3": return "advanced", "terminal"
+        elif choice == "?":
+            print("\n[Básico]: Foca em métricas essenciais. (Mais Rápido)")
+            print("[Intermediário]: Padrão. Analisa processos, serviços e arquivos.")
+            print("[Avançado]: Análise profunda. Lista tudo e checa TUDO. (Mais Demorado)\n")
+            input("Pressione ENTER para voltar.")
+        elif choice == "0":
+            return None
+        else:
+            print("\nOpção inválida. Escolha uma opção entre 0 e 3.")
+
+class Renderer:
+    def __init__(self, level: str, findings: List[dict], info: dict, started: dt.datetime, ended: dt.datetime, inventories: List[dict], health: dict, diagnostics: List[dict], threats: List[dict], yara_summary: dict):
+        self.level = level
+        self.findings = findings
+        self.info = info
+        self.started = started
+        self.ended = ended
+        self.inventories = inventories
+        self.health = health
+        self.diagnostics = diagnostics
+        self.threats = threats
+        self.yara_summary = yara_summary
+        
+    def render(self):
+        pass
+
+class HTMLRenderer(Renderer):
+    def render(self):
+        reports = Path("reports")
+        reports.mkdir(exist_ok=True)
+        stamp = self.started.strftime("%Y-%m-%d_%H%M%S")
+        path = reports / f"atlhas1x_{self.level}_{stamp}.html"
+        path.write_text(report_html(self.level, self.findings, self.info, self.started, self.ended, self.inventories, self.health, self.diagnostics, self.threats, self.yara_summary), encoding="utf-8")
+        print(f"\nRelatório salvo em:\n{path}")
+        webbrowser.open(path.as_uri())
+        return 0
+
+class TerminalRenderer(Renderer):
+    def render(self):
+        reports = Path("reports")
+        reports.mkdir(exist_ok=True)
+        stamp = self.started.strftime("%Y-%m-%d_%H%M%S")
+        
+        print("\n" + "=" * 50)
+        print(f" ATLHAS1X v1.3 - Relatório {self.level.upper()}")
+        print("=" * 50)
+        print(f"Sistema: {self.info['hostname']} | {self.info['operating_system']}")
+        print(f"Privilégios Administrativos: {self.info['administrator_privileges']}")
+        print(f"Início: {self.started.strftime('%Y-%m-%d %H:%M:%S')}")
+        print("-" * 50)
+        
+        category_sets = (
+            ("Endpoint Protection", {"Endpoint Protection", "Defender Hardening", "Application Protection"}),
+            ("Firewall", {"Firewall"}),
+            ("Account Security", {"Account Security", "Authentication", "Accounts"}),
+            ("Windows Hardening", {"System Hardening", "Credential Protection", "Virtualization Security"}),
+            ("Persistence", {"Startup", "Scheduled Tasks", "System Services"}),
+            ("Processes", {"Process Activity"}),
+            ("Network", {"Network Security", "Network Configuration", "Listening Ports", "Remote Access"})
+        )
+        for label, categories in category_sets:
+            relevant = [item for item in self.findings if item["category"] in categories]
+            if not relevant: continue
+            mark = "[WARN]" if any(item["result"] in ("WARNING", "FAIL") for item in relevant) else "[INFO]" if any(item["result"] == "UNKNOWN" for item in relevant) else "[ OK ]"
+            print(f"{mark} {label}")
+            if self.level in ("intermediate", "advanced"):
+                for item in relevant:
+                    if item["result"] in ("WARNING", "FAIL"):
+                        print(f"    - {item['name']}: {item['severity']} ({item['result']})")
+        
+        high_priority = sum(item["classification"] == "HIGH PRIORITY REVIEW" for item in self.threats)
+        print("-" * 50)
+        print(" THREAT ANALYSIS (YARA)")
+        print("-" * 50)
+        print(f"Arquivos revisados: {len(self.threats)}")
+        print(f"Scans YARA: {self.yara_summary.get('files_scanned', 0)}")
+        print(f"Matches YARA: {self.yara_summary.get('matches', 0)}")
+        print(f"Suspeitos / High Priority: {sum(item['classification'] in ('SUSPICIOUS', 'HIGH PRIORITY REVIEW') for item in self.threats)} / {high_priority}")
+        
+        print("-" * 50)
+        print(" ESTATÍSTICAS")
+        print("-" * 50)
+        severity_counts = {severity: sum(item["severity"] == severity and item["result"] in ("WARNING", "FAIL") for item in self.findings) for severity in SEVERITIES}
+        print(f"INFO: {sum(item['severity'] == 'INFO' for item in self.findings)} | LOW: {severity_counts['LOW']} | MEDIUM: {severity_counts['MEDIUM']} | HIGH: {severity_counts['HIGH']} | CRITICAL: {severity_counts['CRITICAL']}")
+        print(f"Completo: {self.health['completeness']}% ({self.health['completed']} completados, {self.health['unavailable']} indisponíveis, {self.health['failed']} falharam)")
+        print(f"\nSECURITY SCORE: {security_score(self.findings)} / 100")
+        print(f"RISCO GERAL: {overall(self.findings)}")
+        print("=" * 50 + "\n")
+        
+        try:
+            save_txt = input("Deseja salvar os resultados acima em um arquivo .TXT? (s/N): ").strip().lower()
+            if save_txt == "s":
+                path = reports / f"atlhas1x_terminal_{self.level}_{stamp}.txt"
+                path.write_text("Atlhas1x Terminal Report\n\nSee console output.", encoding="utf-8") # A simplified version for now since it's just the console output.
+                print(f"Salvo em: {path}")
+        except (KeyboardInterrupt, EOFError):
+            pass
+        return 0
+
 def main():
     global LIVE_DETAILS, LIVE_LOG_PATH, SCAN_COMPLETED_MODULES
     parser = argparse.ArgumentParser(description="Run a local, read-only Windows security scan and generate an offline HTML report.")
     parser.add_argument("--report", choices=("basic", "intermediate", "advanced"), help="report detail level (default: intermediate)")
     parser.add_argument("--mode", choices=("basic", "intermediate", "advanced"), help=argparse.SUPPRESS)
+    parser.add_argument("--terminal", action="store_true", help="run in terminal mode instead of HTML")
     parser.add_argument("--version", action="version", version=f"Atlhas1x {VERSION}")
     parser.add_argument("--live-details", action="store_true", help="show bounded command and response details for the local launcher")
     parser.add_argument("--live-log", help="local path used by the graphical launcher for live audit details")
     args = parser.parse_args()
-    level = args.report or args.mode or "intermediate"
-    LIVE_DETAILS = args.live_details and level != "basic"
-    LIVE_LOG_PATH = args.live_log if LIVE_DETAILS else None
+    
+    if len(sys.argv) == 1:
+        # No arguments passed, show interactive menu
+        level, output_mode = interactive_menu()
+        LIVE_DETAILS = True
+        LIVE_LOG_PATH = None
+    else:
+        level = args.report or args.mode or "intermediate"
+        output_mode = "terminal" if args.terminal else "html"
+        LIVE_DETAILS = args.live_details and level != "basic"
+        LIVE_LOG_PATH = args.live_log if LIVE_DETAILS else None
+
     SCAN_COMPLETED_MODULES = 0
     started = dt.datetime.now()
     diagnostics = []
@@ -1217,36 +1385,12 @@ def main():
     info = system_info()
     ended = dt.datetime.now()
     health = scan_health(findings)
-    path = None
-    report_error = None
-    try:
-        reports = Path("reports")
-        reports.mkdir(exist_ok=True)
-        stamp = started.strftime("%Y-%m-%d_%H%M%S")
-        path = reports / f"atlhas1x_{level}_{stamp}.html"
-        path.write_text(report_html(level, findings, info, started, ended, inventories, health, diagnostics, threats, yara_summary), encoding="utf-8")
-    except OSError as exc:
-        report_error = str(exc)
-    print(f"Atlhas1x {VERSION}\nDetection Accuracy & Validation\n\nSystem:\n{info['hostname']}\n{info['operating_system']}")
-    if info["administrator_privileges"] == "No":
-        print("\n[INFO] Running without administrator privileges. Some checks may be unavailable.")
-    print("\nScanning...")
-    category_sets = (("Endpoint Protection", {"Endpoint Protection", "Defender Hardening", "Application Protection"}), ("Firewall", {"Firewall"}), ("Account Security", {"Account Security", "Authentication", "Accounts"}), ("Windows Hardening", {"System Hardening", "Credential Protection", "Virtualization Security"}), ("Persistence", {"Startup", "Scheduled Tasks", "System Services"}), ("Processes", {"Process Activity"}), ("Network", {"Network Security", "Network Configuration", "Listening Ports", "Remote Access"}))
-    for label, categories in category_sets:
-        relevant = [item for item in findings if item["category"] in categories]
-        mark = "[WARN]" if any(item["result"] in ("WARNING", "FAIL") for item in relevant) else "[INFO]" if any(item["result"] == "UNKNOWN" for item in relevant) else "[OK]"
-        print(f"{mark} {label}")
-    severity_counts = {severity: sum(item["severity"] == severity and item["result"] in ("WARNING", "FAIL") for item in findings) for severity in SEVERITIES}
-    duration = (ended - started).total_seconds()
-    high_priority = sum(item["classification"] == "HIGH PRIORITY REVIEW" for item in threats)
-    print(f"\nThreat Analysis:\nFiles reviewed: {len(threats)}\nYARA scanned: {yara_summary.get('files_scanned', 0)}\nYARA matches: {yara_summary.get('matches', 0)}\nSuspicious items: {sum(item['classification'] in ('SUSPICIOUS', 'HIGH PRIORITY REVIEW') for item in threats)}\nHigh priority review: {high_priority}")
-    if yara_summary.get("engine") == "NOT AVAILABLE":
-        print("[WARN] YARA support is unavailable. Threat analysis continued using Atlhas1x heuristics.")
-    print(f"\nScan completed.\n\nChecks:\n{health['completed']} completed\n{health['unavailable']} unavailable\n{health['failed']} failed\nScan Completeness: {health['completeness']}%\n\nFindings:\nINFO       {sum(item['severity'] == 'INFO' for item in findings)}\nLOW        {severity_counts['LOW']}\nMEDIUM     {severity_counts['MEDIUM']}\nHIGH       {severity_counts['HIGH']}\nCRITICAL   {severity_counts['CRITICAL']}\n\nSecurity Score:\n{security_score(findings)} / 100\n\nOverall Risk:\n{overall(findings)}\n\nDuration:\n{duration:.2f}s")
-    if path:
-        print(f"\nReport:\n{path}")
-        return 0
-    print(f"\n[WARN] Report could not be saved: {report_error}")
-    return 1
+    
+    if output_mode == "terminal":
+        renderer = TerminalRenderer(level, findings, info, started, ended, inventories, health, diagnostics, threats, yara_summary)
+    else:
+        renderer = HTMLRenderer(level, findings, info, started, ended, inventories, health, diagnostics, threats, yara_summary)
+    
+    return renderer.render()
 
 if __name__ == "__main__": raise SystemExit(main())

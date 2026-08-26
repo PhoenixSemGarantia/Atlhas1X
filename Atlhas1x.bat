@@ -18,12 +18,7 @@ set "APP_DIR=%APP_DIR:~0,-1%"
 REM Run Updater
 python "%APP_DIR%\updater.py"
 
-REM Run Atlhas1x main script via VBS if it exists, else directly
-set "GUI_LAUNCHER=%APP_DIR%\scripts\Abrir_Atlhas1x.vbs"
-if exist "%GUI_LAUNCHER%" (
-    start "" wscript.exe //B "%GUI_LAUNCHER%"
-) else (
-    python "%APP_DIR%\atlhas1x.py"
-)
+REM Run Atlhas1x
+python "%APP_DIR%\atlhas1x.py" %*
 
-exit /b 0
+exit /b %ERRORLEVEL%

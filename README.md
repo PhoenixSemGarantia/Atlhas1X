@@ -9,6 +9,7 @@ Atlhas1x is a local Windows security scanner designed to audit security configur
 ## Features
 - Defender, Firewall, account, update, network and Windows hardening checks.
 - Basic, Intermediate and Advanced offline HTML reports.
+- **Terminal Mode (v1.3)**: Execute the scanner and view the full report entirely in the command line.
 - Security Score, finding confidence and Scan Completeness metrics.
 - Read-only local collection with isolated check failures.
 - Focused suspicious-activity heuristics for persistence, process paths, recent files and process/listener relationships.
@@ -28,7 +29,14 @@ To start the application, simply run:
 ```text
 Atlhas1x.bat
 ```
-This will automatically launch the internal scanner. There is no need to manually run Python modules for standard use.
+This will automatically launch the internal scanner menu. You can choose to generate an HTML report (which automatically opens in your browser) or use the new **Terminal Mode** (Option 4) to view the results directly in the prompt.
+
+### Command Line Arguments
+For automation and advanced users, you can bypass the interactive menu by providing arguments directly to the batch file:
+```text
+Atlhas1x.bat --terminal --report basic
+Atlhas1x.bat --report advanced
+```
 
 ## Report Levels
 - **Basic**: System overview, Security Score, Risk, Scan Completeness, and high-priority findings.
