@@ -87,13 +87,6 @@ The only normal external communication allowed is the update check against the o
 ## Limitations
 Some hardening features depend on Windows editions, virtualization, and active antivirus. The scanner continues without administrative privileges, though some checks may be unavailable.
 
-## Testing
-To run the offline validation suite:
-```powershell
-python -m unittest discover -s tests -v
-```
-See `TESTING.md` for detailed instructions on validating the tool safely.
-
 ## License
 This project is licensed under the [BSD 3-Clause License](LICENSE).
 

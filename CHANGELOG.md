@@ -38,7 +38,6 @@
 - Distribution workflow
 - Detection accuracy
 - False-positive handling
-- Test coverage
 
 ### Fixed
 - Remaining scanner and report issues discovered during validation
@@ -68,7 +67,6 @@ confirmation that a file is malicious.
 
 - Stable CLI with `--help` and `--version`.
 - Scan health, completeness and module-duration diagnostics.
-- Platform-independent validation tests for score, risk, escaping and status handling.
 
 ### Improved
 

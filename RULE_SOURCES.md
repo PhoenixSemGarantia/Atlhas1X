@@ -1,11 +1,5 @@
 # Rule sources
 
-## Local Atlhas1x rule
-
-- Location: `rules/local/atlhas_test_only.yar`
-- Purpose: a benign, clearly marked test fixture for validating the optional
-  YARA engine. It is not a malware-detection rule.
-
 ## Third-party YARA rules
 
 - Source: [Yara-Rules/rules](https://github.com/Yara-Rules/rules)
