@@ -1,0 +1,28 @@
+name: Windows CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Check Python syntax
+        shell: pwsh
+        run: |
+          python -m py_compile atlhas1x.py updater.py repair.py security_sources.py threat_analysis.py yara_engine.py generate_manifest.py
+      - name: Check CLI interface
+        shell: pwsh
+        run: |
+          python atlhas1x.py --help
+          python atlhas1x.py --version

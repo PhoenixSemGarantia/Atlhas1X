@@ -15,3 +15,5 @@
 - [ ] Add optional custom scan paths
 - [ ] Improve rule metadata classification
 - [ ] Improve compatibility across Windows editions
+- [ ] Add redacted product screenshots to the documentation
+- [ ] Add machine-readable report export

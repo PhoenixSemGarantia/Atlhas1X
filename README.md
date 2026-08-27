@@ -1,97 +1,206 @@
-![Atlhas1x Banner](assets/banner.png)
+<p align="center">
+  <img src="assets/banner.png" alt="Atlhas1x — Windows Security Audit" width="860">
+</p>
 
-# Atlhas1x
-Windows Security Scanner
+<h1 align="center">Atlhas1x</h1>
 
-## About
-Atlhas1x is a local Windows security scanner designed to audit security configurations, identify suspicious indicators, analyze persistence mechanisms, perform YARA-based file analysis and generate offline HTML security reports.
+<p align="center">
+  A local, read-only <strong>Windows security audit</strong> tool for reviewing security controls, identifying findings, and generating offline HTML reports.
+</p>
+
+<p align="center">
+  <a href="https://github.com/PhoenixSemGarantia/Atlhas1X/actions/workflows/ci.yml"><img src="https://github.com/PhoenixSemGarantia/Atlhas1X/actions/workflows/ci.yml/badge.svg" alt="Windows CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-BSD--3--Clause-5d7fb9.svg" alt="BSD 3-Clause License"></a>
+  <img src="https://img.shields.io/badge/platform-Windows-0078D4.svg" alt="Windows">
+  <img src="https://img.shields.io/badge/Python-3.x-3776AB.svg" alt="Python 3">
+</p>
+
+<p align="center"><strong>English</strong> · <a href="README.pt-BR.md">Português</a></p>
+
+> **Current version:** v1.4.2 &nbsp;|&nbsp; **Status:** Active &nbsp;|&nbsp; **License:** BSD 3-Clause
+
+## What is Atlhas1x?
+
+Atlhas1x is a local Windows security scanner for administrators, home-lab users, and defenders who need a clear baseline of a machine's security configuration. It collects local security metadata, classifies findings, calculates an internal Security Score, and writes self-contained HTML reports.
+
+It is designed for **audit and review**, not remediation. Atlhas1x does not change Windows settings, execute discovered files, stop processes, modify the firewall, or upload scan data.
+
+## Why use it?
+
+- Review a broad set of Windows security controls from one local tool.
+- Generate Basic, Intermediate, or Advanced reports that work offline.
+- Keep the audit read-only and inspect findings in the context of the machine.
+- Use Terminal Mode when a graphical report is not practical.
+
+## Quick Start
+
+On a Windows machine with Git and Python 3 installed:
+
+```powershell
+git clone https://github.com/PhoenixSemGarantia/Atlhas1X.git
+cd Atlhas1X
+python -m pip install -r requirements.txt
+python atlhas1x.py --report intermediate
+```
+
+Or launch `Atlhas1x.bat` from File Explorer for the Windows guided launcher. The scanner is usable without administrator privileges; some checks may be unavailable depending on permissions and the Windows edition.
 
 ## Features
-- Defender, Firewall, account, update, network and Windows hardening checks.
-- Basic, Intermediate and Advanced offline HTML reports.
-- **Terminal Mode (v1.3)**: Execute the scanner and view the full report entirely in the command line.
-- **Self Repair (v1.4)**: Automatically verify application integrity and repair missing or corrupted files using the official GitHub repository.
-- Security Score, finding confidence and Scan Completeness metrics.
-- Read-only local collection with isolated check failures.
-- Focused suspicious-activity heuristics for persistence, process paths, recent files and process/listener relationships.
-- Optional local YARA matching and Authenticode metadata for files.
 
-## How It Works
-Atlhas1x correlates local indicators like temporary locations, startup persistence, scheduled tasks, services, network listeners, recent modifications, digital signatures, and optional YARA matches. It only examines files related to these items; it never scans the entire disk, executes files, or sends data over the internet.
+- Windows Defender, firewall, update, account, SMB, RDP, and hardening checks.
+- BitLocker, Secure Boot, VBS, Credential Guard, SmartScreen, and related Windows protection visibility when available.
+- Startup programs, scheduled tasks, services, shares, processes, listeners, and active connection inventories.
+- Focused suspicious-activity analysis with path, persistence, signature, and listener context.
+- Optional offline YARA matching for focused, locally discovered files.
+- Basic, Intermediate, and Advanced offline HTML reports.
+- Terminal Mode, integrity verification, guided launcher, and update support.
 
-Suspicious findings and YARA matches require manual review and are not definitive proof that a file is malicious.
+## Security Checks
 
-## Installation
-Clone or download this repository.
-Ensure you have Python 3.x installed on your system.
+| Area | Examples of collected information |
+| --- | --- |
+| Endpoint protection | Defender state, real-time protection, signatures, exclusions, ASR, Controlled Folder Access |
+| Firewall and remote access | Domain/Private/Public profiles, rules summary, RDP and NLA context |
+| Accounts and policy | UAC, local users, administrators, Guest, password and lockout policy |
+| System hardening | BitLocker, Secure Boot, SmartScreen, VBS, Memory Integrity, Credential Guard, LSASS protection |
+| Network | SMBv1, proxy, DNS, interfaces, shares, listening ports, active connections |
+| Persistence and activity | Startup entries, scheduled tasks, automatic services, processes and focused threat indicators |
 
-## Running Atlhas1x
-To start the application, simply run:
-```text
-Atlhas1x.bat
-```
-This will automatically launch the internal scanner menu. You can choose to generate an HTML report (which automatically opens in your browser) or use the new **Terminal Mode** (Option 4) to view the results directly in the prompt.
-
-### Command Line Arguments
-For automation and advanced users, you can bypass the interactive menu by providing arguments directly to the batch file:
-```text
-Atlhas1x.bat --terminal --report basic
-Atlhas1x.bat --report advanced
-```
-
-## Report Levels
-- **Basic**: System overview, Security Score, Risk, Scan Completeness, and high-priority findings.
-- **Intermediate**: All findings with descriptions and recommended actions.
-- **Advanced**: Detailed evidence, module timings, and technical inventories.
-
-## Threat Analysis
-Atlhas1x uses heuristic indicators to identify items that may require manual review. Context such as valid digital signatures or expected Windows paths reduces the relevance of a finding, limiting false positives.
-
-## YARA
-YARA engine support (`yara-python`) is optional. If available, the scanner will use rules located in `rules/local/` and `rules/third_party/`. The scanner never downloads or updates rules automatically. If YARA is not installed, the tool gracefully continues with heuristic checks.
+Availability depends on Windows edition, local policy, running security products, and permissions. `UNKNOWN`, `NOT AVAILABLE`, and `ACCESS DENIED` are reported distinctly and are not automatically treated as security failures.
 
 ## Security Score
-The Atlhas1x Security Score is an internal project metric designed to provide a simple overview of confirmed findings. It is not an official Microsoft, CIS, NIST, or industry-standard security score.
 
-## Suspicion Score
-An internal measure of the relevance of correlated indicators, ranging from 0 to 100. It is not a probability of malware. Advanced reports detail the positive and negative weights applied.
+The **Atlhas1x Security Score** starts at 100 and is reduced by confirmed findings according to their severity. It is an internal project metric intended to make a scan easier to review.
 
-## Screenshots
-Offline HTML reports are generated locally and work entirely without an internet connection.
+It is **not** a Microsoft, NIST, CIS, or industry-standard score, and it is not a certification of system security. Read [the score documentation](docs/security-score.md) before relying on it for decisions.
 
-## Requirements
-- Windows OS (Windows 10/11 or Server equivalents).
-- Python 3.x.
-- Optional: `yara-python` for YARA matching.
+## Audit Modes
 
-## Updating Atlhas1x
-Atlhas1x checks the official GitHub repository during startup. When a newer version is available, it downloads and applies the update before opening the scanner. The process preserves local reports, the embedded Python runtime and local preferences.
+| Mode | Best for | Output |
+| --- | --- | --- |
+| Basic | Quick review | Score, overall risk, scan health, and important findings |
+| Intermediate | Everyday auditing | Context, descriptions, and recommendations |
+| Advanced | Technical review | Technical evidence, inventories, module timings, and report navigation |
 
-To check explicitly from a terminal, run `python updater.py --check`. To confirm an update manually, run `python updater.py --manual`.
+Run a chosen report level directly:
 
-## Self Repair
-Atlhas1x can verify the integrity of its own application files. If essential files are missing or corrupted, it can restore clean copies from the project's official GitHub release.
-The repair system never modifies Windows security settings or user scan results.
+```powershell
+python atlhas1x.py --report basic
+python atlhas1x.py --report intermediate
+python atlhas1x.py --report advanced
+```
 
-## Privacy
-The scan:
-- runs locally
-- does not upload scanned files
-- does not upload hashes
-- does not send security reports
-- does not send credentials
-- does not use cloud malware scanning
+Read more in [Audit Modes](docs/audit-modes.md).
 
-The only normal external communication allowed is the update check against the official Atlhas1x repository.
+## Terminal Mode
+
+For a text-only workflow, open `Atlhas1x_Terminal.bat` or run:
+
+```powershell
+python atlhas1x.py --terminal --report intermediate
+```
+
+The terminal mode remains read-only. See [Terminal Mode](docs/terminal-mode.md).
+
+## Reports and Screenshots
+
+Reports are written locally to `reports/` and open offline in the default browser. They contain information from the audited machine, so generated reports are intentionally ignored by Git.
+
+The repository includes the project banner above. Redacted screenshots and demonstration assets belong in [`docs/images/`](docs/images/README.md); no machine-specific reports or screenshots are published by default.
+
+## Installation
+
+See the complete [installation guide](docs/installation.md) for the guided launcher, Python installation, optional YARA support, and troubleshooting.
+
+### Requirements
+
+- Windows 10 or Windows 11. Windows Server equivalents may work where the underlying Windows interfaces are available.
+- Python 3.x for direct command-line execution.
+- Optional: `yara-python` for local YARA matching. The scanner continues with heuristics when it is unavailable.
+
+## How It Works
+
+```text
+Collect local Windows metadata
+        ↓
+Analyze and normalize results
+        ↓
+Classify findings and calculate the internal score
+        ↓
+Generate an offline HTML report
+```
+
+Atlhas1x focuses file-related analysis on files already linked to local processes, startup entries, scheduled tasks, services, or other relevant persistence locations. It does not scan the whole disk, execute files, or use cloud scanning.
+
+## Project Structure
+
+```text
+Atlhas1x/
+├── atlhas1x.py              # scanner and report generation
+├── Atlhas1x.bat             # guided Windows launcher
+├── Atlhas1x_Terminal.bat    # terminal launcher
+├── scripts/                 # PowerShell and VBS launcher helpers
+├── rules/                   # local and third-party YARA rule locations
+├── signatures/              # local signature database locations
+├── docs/                    # user and technical documentation
+├── config/                  # non-sensitive project configuration
+└── reports/                 # local, ignored report output
+```
+
+For implementation notes, see [Architecture](docs/architecture.md).
+
+## Privacy and Security Model
+
+- All audit collection and reports stay on the audited machine.
+- Atlhas1x does not upload files, hashes, credentials, clipboard data, browser data, or report contents.
+- YARA matching is local and optional. Rules are not automatically downloaded during a scan.
+- The normal external operation is an optional check for application updates against the official repository.
+- Findings require human review. A suspicious indicator or a YARA match is not proof of malware.
 
 ## Limitations
-Some hardening features depend on Windows editions, virtualization, and active antivirus. The scanner continues without administrative privileges, though some checks may be unavailable.
+
+- Some checks require permissions that are not available to a standard user.
+- Windows security APIs differ by edition, build, policy, and installed security product.
+- Dynamic inventories such as processes, PIDs, and connections can legitimately change between scans.
+- Atlhas1x is an auditing tool, not an antivirus, EDR, SIEM, vulnerability scanner, or remediation system.
+
+## Roadmap
+
+**Completed**
+
+- Offline HTML reports and Terminal Mode
+- Windows hardening, account, network, persistence, and activity checks
+- Focused heuristic analysis and optional local YARA support
+- Integrity verification and update workflow
+
+**In progress**
+
+- Improving report clarity and Windows compatibility
+- Reducing false positives through better context
+
+**Planned**
+
+- Additional Windows hardening checks
+- Optional machine-readable report export
+- Expanded regression coverage
+
+**Ideas**
+
+- User-requested audit profiles that remain local and read-only
+
+## Contributing
+
+Contributions are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md), follow the [Code of Conduct](CODE_OF_CONDUCT.md), and keep changes aligned with the project's local, read-only security model.
+
+## Reporting Bugs and Security Issues
+
+- For reproducible defects, use the [bug report template](.github/ISSUE_TEMPLATE/bug_report.md).
+- For security vulnerabilities in Atlhas1x itself, follow [SECURITY.md](SECURITY.md) and do **not** open a public issue first.
 
 ## License
-This project is licensed under the [BSD 3-Clause License](LICENSE).
 
-## Acknowledgements
-This project utilizes the [YARA](https://github.com/VirusTotal/yara) pattern matching swiss knife, created and maintained by Victor M. Alvarez and the VirusTotal team. YARA is licensed under the BSD 3-Clause License. We express our gratitude for their incredible work in the cybersecurity community.
+Atlhas1x is licensed under the [BSD 3-Clause License](LICENSE). Third-party YARA rules and signature sources retain their own licenses; see [RULE_SOURCES.md](RULE_SOURCES.md).
 
 ## Disclaimer
-Atlhas1x is designed as an auditing and baseline analysis tool. It **does not** replace a dedicated EDR/Antivirus solution. Always verify findings manually before making critical system changes.
+
+Atlhas1x is an auditing tool and does not automatically modify or remediate Windows security settings. Review findings in the context of the audited system before making changes.

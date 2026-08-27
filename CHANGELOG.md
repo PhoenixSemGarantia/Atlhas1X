@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+- Reworked the public documentation around installation, audit modes, privacy, and the read-only security model.
+- Added project contribution and security-reporting guidance.
+
+### Added
+- Windows CI validation for Python syntax and the documented CLI interface.
+
 ## v1.4.2
 
 ### Fixed

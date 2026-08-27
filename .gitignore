@@ -2,9 +2,17 @@
 reports/
 !reports/.gitkeep
 runtime/
+history/
+scratch/
+temp/
+*.log
+*.tmp
 
 # Arquivos de configuracao do usuario
 config/update_preferences.json
+.env
+.env.*
+!.env.example
 
 # Arquivos temporarios do Python
 __pycache__/
@@ -16,3 +24,25 @@ __pycache__/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Cobertura, pacotes e ambientes locais
+.coverage
+coverage.xml
+htmlcov/
+build/
+dist/
+*.egg-info/
+.venv/
+venv/
+
+# Bases locais e assinaturas baixadas
+signatures/clamav/*.cvd
+signatures/clamav/*.cld
+signatures/hashes/*.sqlite
+signatures/hashes/*.sqlite-*
+
+# Material sensivel ou especifico da maquina
+*.pem
+*.key
+*.pfx
+*.p12
